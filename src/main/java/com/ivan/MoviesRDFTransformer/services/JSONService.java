@@ -39,7 +39,13 @@ public class JSONService {
     }
 
     public static List<Movie> getAllMovies() {
-        return movies;
+        movies.stream().forEach(e -> {
+            MovieCast mc = movieCasts.stream().filter(ee -> ee.getId().equals(e.getId())).findAny().orElse(null);
+            e.setCastMembers(mc.getCastMembers());
+            e.setCrewMembers(mc.getCrewMembers());
+        });
+
+        return movies.stream().distinct().collect(Collectors.toList());
     }
 
     public static List<Category> getAllGenres() {

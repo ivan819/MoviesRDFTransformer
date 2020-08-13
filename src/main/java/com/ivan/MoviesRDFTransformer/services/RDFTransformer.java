@@ -55,6 +55,8 @@ public class RDFTransformer {
     private final Property hasCrewProp;
     private final Property hasCastProp;
 
+    private final Property hasMovieProp;
+
     private final Property hasOrderProp;
     private final Property hasCharacterProp;
 
@@ -109,6 +111,7 @@ public class RDFTransformer {
         hasOrderProp = model.createProperty(wbs, "hasOrder");
         hasCharacterProp = model.createProperty(wbs, "hasCharacter");
         hasPersonProp = model.createProperty(wbs, "hasPerson");
+        hasMovieProp = model.createProperty(wbs, "hasMovie");
     }
 
     public void writeGenresToModel() {
@@ -194,6 +197,12 @@ public class RDFTransformer {
 
             e.getProductionCountries().stream().forEach(
                     ee -> temp.addProperty(producedInProp, model.createResource(wbs + cleanName(ee.getName()))));
+
+            e.getCastMembers().stream().forEach(ee -> temp.addProperty(hasCastProp,
+                    model.createResource(wbs + cleanName(ee.getCharacter() + "_" + ee.getName()))));
+
+            e.getCrewMembers().stream().forEach(ee -> temp.addProperty(hasCrewProp,
+                    model.createResource(wbs + cleanName(ee.getJob() + "_" + ee.getName()))));
         });
     }
 

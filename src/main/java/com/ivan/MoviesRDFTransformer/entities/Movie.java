@@ -5,10 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Movie {
     @JsonProperty("id")
+    @JsonAlias("movie_id")
     private Long id;
     @JsonProperty("title")
     private String title;
@@ -39,6 +41,11 @@ public class Movie {
     private List<Category> productionCompanies;
     @JsonProperty("production_countries")
     private List<Category> productionCountries;
+
+    @JsonProperty("crew")
+    private List<CrewMember> crewMembers;
+    @JsonProperty("cast")
+    private List<CastMember> castMembers;
 
     public Movie() {
     }
@@ -177,6 +184,34 @@ public class Movie {
 
     public void setProductionCountries(List<Category> productionCountries) {
         this.productionCountries = productionCountries;
+    }
+
+    public List<CrewMember> getCrewMembers() {
+        return crewMembers;
+    }
+
+    public void setCrewMembers(List<CrewMember> crewMembers) {
+        this.crewMembers = crewMembers;
+    }
+
+    public List<CastMember> getCastMembers() {
+        return castMembers;
+    }
+
+    public void setCastMembers(List<CastMember> castMembers) {
+        this.castMembers = castMembers;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.id.equals(((Movie) obj).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.id == null)
+            id = -1L;
+        return this.id.hashCode();
     }
 
 }

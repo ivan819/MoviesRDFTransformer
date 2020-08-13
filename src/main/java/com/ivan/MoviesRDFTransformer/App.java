@@ -2,6 +2,7 @@ package com.ivan.MoviesRDFTransformer;
 
 import java.io.IOException;
 
+import com.ivan.MoviesRDFTransformer.services.JSONService;
 import com.ivan.MoviesRDFTransformer.services.RDFTransformer;
 
 public class App {
@@ -9,6 +10,7 @@ public class App {
 
     public static void main(String[] args) throws IOException {
 
+        System.out.println(JSONService.getAllMovies().size());
         RDFTransformer rdf = new RDFTransformer();
         rdf.writeGenresToModel();
         printTime();
