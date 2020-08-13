@@ -6,7 +6,7 @@ public class CastMember extends Member {
     @JsonProperty("order")
     private Integer order;
     @JsonProperty("character")
-    private String name;
+    private String character;
 
     public Integer getOrder() {
         return order;
@@ -16,12 +16,12 @@ public class CastMember extends Member {
         this.order = order;
     }
 
-    public String getName() {
-        return name;
+    public String getCharacter() {
+        return character;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCharacter(String character) {
+        this.character = character;
     }
 
 }

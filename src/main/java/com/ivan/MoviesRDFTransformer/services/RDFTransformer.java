@@ -30,6 +30,8 @@ public class RDFTransformer {
     private final Resource filmResource;
     private final Resource personResource;
     private final Resource departmentResource;
+    private final Resource crewResource;
+    private final Resource castResource;
 
     private final Property isA;
     private final Property genreProp;
@@ -47,8 +49,16 @@ public class RDFTransformer {
     private final Property revenueProp;
     private final Property runtimeProp;
     private final Property idProp;
+    private final Property subclassProp;
 
-    // private final Property departmentProp;
+    private final Property hasCrewProp;
+    private final Property hasCastProp;
+
+    private final Property hasOrderProp;
+    private final Property hasCharacterProp;
+
+    private final Property inDepartmentProp;
+    private final Property inJobProp;
 
     private Model model;
 
@@ -59,12 +69,16 @@ public class RDFTransformer {
         model.setNsPrefix("wbs", wbs);
         model.setNsPrefix("rdfs", rdfs);
 
+        subclassProp = model.createProperty(rdfs, "subClassOf");
+
         genreResource = model.createResource(dbpedia + "Genre");
         filmResource = model.createResource(dbpedia + "Film");
         personResource = model.createResource(dbpedia + "Person");
         departmentResource = model.createResource(dbpedia + "Department");
         productionCompanyResource = model.createResource(dbpedia + "Company");
         productionCountryResource = model.createResource(dbpedia + "Country");
+        crewResource = model.createResource(wbs + "CrewMember").addProperty(subclassProp, personResource);
+        castResource = model.createResource(wbs + "CastMember").addProperty(subclassProp, personResource);
 
         isA = model.createProperty(rdf + "type");
         genreProp = model.createProperty(dbpedia + "genre");
@@ -82,6 +96,15 @@ public class RDFTransformer {
         runtimeProp = model.createProperty(dbpedia, "runtime");
         revenueProp = model.createProperty(dbpedia, "revenue");
         idProp = model.createProperty(wbs, "id");
+
+        hasCrewProp = model.createProperty(wbs, "hasCrew");
+        hasCastProp = model.createProperty(wbs, "hasCast");
+
+        inDepartmentProp = model.createProperty(wbs, "inDepartment");
+        inJobProp = model.createProperty(wbs, "inJob");
+
+        hasOrderProp = model.createProperty(wbs, "hasOrder");
+        hasCharacterProp = model.createProperty(wbs, "hasCharacter");
 
     }
 
@@ -110,6 +133,24 @@ public class RDFTransformer {
 
         JSONService.getAllMembers().stream().forEach(e -> model.createResource(wbs + cleanName(e.getId().toString()))
                 .addProperty(isA, personResource).addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId()));
+
+    }
+
+    public void writeCastMembersToModel() {
+
+        JSONService.getAllCastMembers().stream()
+                .forEach(e -> model.createResource(wbs + cleanName(e.getId().toString())).addProperty(isA, castResource)
+                        .addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId())
+                        .addLiteral(hasOrderProp, e.getOrder()).addLiteral(hasCharacterProp, e.getCharacter()));
+
+    }
+
+    public void writeCrewMembersToModel() {
+
+        JSONService.getAllCrewMembers().stream()
+                .forEach(e -> model.createResource(wbs + cleanName(e.getId().toString())).addProperty(isA, crewResource)
+                        .addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId())
+                        .addLiteral(inJobProp, e.getJob()).addLiteral(inDepartmentProp, e.getDepartment()));
 
     }
 
