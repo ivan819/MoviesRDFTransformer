@@ -1,13 +1,18 @@
 package com.ivan.MoviesRDFTransformer;
 
-/**
- * Hello world!
- *
- */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
+import java.io.IOException;
+
+import com.ivan.MoviesRDFTransformer.services.RDFTransformer;
+
+public class App {
+    public static void main(String[] args) throws IOException {
+
+        RDFTransformer rdf = new RDFTransformer();
+        rdf.writeGenresToModel();
+        rdf.writeProductionCountriesToModel();
+        rdf.writeProductionCompaniesToModel();
+        rdf.print();
+        // rdf.writeMoviesToModel();
     }
+
 }
