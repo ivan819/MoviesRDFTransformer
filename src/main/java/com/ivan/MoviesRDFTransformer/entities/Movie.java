@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Movie {
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("title")
     private String title;
     @JsonProperty("budget")
@@ -43,16 +43,16 @@ public class Movie {
     public Movie() {
     }
 
-    public Movie(Integer id, String title) {
+    public Movie(Long id, String title) {
         this.id = id;
         this.title = title;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

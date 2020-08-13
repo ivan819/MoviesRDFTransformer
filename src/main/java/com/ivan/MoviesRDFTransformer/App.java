@@ -8,12 +8,12 @@ public class App {
     public static void main(String[] args) throws IOException {
 
         RDFTransformer rdf = new RDFTransformer();
-        rdf.writeGenresToModel();
-        rdf.writeProductionCountriesToModel();
-        rdf.writeProductionCompaniesToModel();
-
-        rdf.writeMoviesToModel();
-        rdf.save();
+        // rdf.writeGenresToModel();
+        // rdf.writeProductionCountriesToModel();
+        // rdf.writeProductionCompaniesToModel();
+        rdf.writeDepartmentsToModel();
+        // rdf.writeMoviesToModel();
+        rdf.print();
     }
 
 }
