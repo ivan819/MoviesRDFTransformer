@@ -65,6 +65,7 @@ public class JSONService {
     }
 
     public static List<Member> getAllMembers() {
+
         List<Member> members = new ArrayList<Member>();
         members.addAll(getAllCastMembers());
         members.addAll(getAllCrewMembers());

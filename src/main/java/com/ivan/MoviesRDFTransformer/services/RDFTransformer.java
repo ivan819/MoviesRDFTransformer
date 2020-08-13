@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -60,6 +61,8 @@ public class RDFTransformer {
     private final Property inDepartmentProp;
     private final Property inJobProp;
 
+    private final Property hasPersonProp;
+
     private Model model;
 
     public RDFTransformer() throws JsonParseException, JsonMappingException, IOException {
@@ -77,8 +80,8 @@ public class RDFTransformer {
         departmentResource = model.createResource(dbpedia + "Department");
         productionCompanyResource = model.createResource(dbpedia + "Company");
         productionCountryResource = model.createResource(dbpedia + "Country");
-        crewResource = model.createResource(wbs + "CrewMember").addProperty(subclassProp, personResource);
-        castResource = model.createResource(wbs + "CastMember").addProperty(subclassProp, personResource);
+        crewResource = model.createResource(wbs + "CrewMember");
+        castResource = model.createResource(wbs + "CastMember");
 
         isA = model.createProperty(rdf + "type");
         genreProp = model.createProperty(dbpedia + "genre");
@@ -105,7 +108,7 @@ public class RDFTransformer {
 
         hasOrderProp = model.createProperty(wbs, "hasOrder");
         hasCharacterProp = model.createProperty(wbs, "hasCharacter");
-
+        hasPersonProp = model.createProperty(wbs, "hasPerson");
     }
 
     public void writeGenresToModel() {
@@ -131,25 +134,29 @@ public class RDFTransformer {
 
     public void writeMembersToModel() {
 
-        JSONService.getAllMembers().stream().forEach(e -> model.createResource(wbs + cleanName(e.getId().toString()))
-                .addProperty(isA, personResource).addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId()));
+        JSONService.getAllMembers().stream().distinct().sorted(Comparator.comparing(e -> e.getId()))
+                .forEach(e -> model.createResource(wbs + cleanName(e.getId().toString()))
+                        .addProperty(isA, personResource).addLiteral(labelProp, e.getName())
+                        .addLiteral(idProp, e.getId()));
 
     }
 
     public void writeCastMembersToModel() {
 
-        JSONService.getAllCastMembers().stream()
-                .forEach(e -> model.createResource(wbs + cleanName(e.getId().toString())).addProperty(isA, castResource)
-                        .addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId())
+        JSONService.getAllCastMembers().stream().distinct()
+                .forEach(e -> model.createResource(wbs + cleanName(e.getCharacter() + "_" + e.getName()))
+                        .addProperty(isA, castResource)
+                        .addProperty(hasPersonProp, model.createResource(wbs + cleanName(e.getId().toString())))
                         .addLiteral(hasOrderProp, e.getOrder()).addLiteral(hasCharacterProp, e.getCharacter()));
 
     }
 
     public void writeCrewMembersToModel() {
 
-        JSONService.getAllCrewMembers().stream()
-                .forEach(e -> model.createResource(wbs + cleanName(e.getId().toString())).addProperty(isA, crewResource)
-                        .addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId())
+        JSONService.getAllCrewMembers().stream().distinct()
+                .forEach(e -> model.createResource(wbs + cleanName(e.getJob() + "_" + e.getName()))
+                        .addProperty(isA, crewResource)
+                        .addProperty(hasPersonProp, model.createResource(wbs + cleanName(e.getId().toString())))
                         .addLiteral(inJobProp, e.getJob()).addLiteral(inDepartmentProp, e.getDepartment()));
 
     }
