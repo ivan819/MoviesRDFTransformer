@@ -1,5 +1,8 @@
 package com.ivan.MoviesRDFTransformer.services;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -20,22 +23,34 @@ import org.apache.jena.rdf.model.Resource;
 
 public class RDFTransformer {
 
-    private final String filePath = "C:\\Users\\Duck\\Desktop\\movies.json";
+    private final String jsonPath = "C:\\Users\\Duck\\Desktop\\movies.json";
+    private final String rdfPath = "C:\\Users\\Duck\\Desktop\\movies.ttl";
+
     private final String wbs = "http://prefix.com/#";
     private final String dbpedia = "http://dbpedia.org/ontology/";
     private final String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
     private final String rdfs = "http://www.w3.org/2000/01/rdf-schema#";
 
-    Property isA;
-    Property genreProp;
+    private final Resource genreResource;
+    private final Resource productionCompanyResource;
+    private final Resource productionCountryResource;
+    private final Resource filmResource;
 
-    Resource genreResource;
-
-    Resource productionCompanyResource;
-    Resource productionCountryResource;
-    Resource filmResource;
-    Property keywordProp;
-    Property labelProp;
+    private final Property isA;
+    private final Property genreProp;
+    private final Property keywordProp;
+    private final Property labelProp;
+    private final Property producedByProp;
+    private final Property producedInProp;
+    private final Property budgetProp;
+    private final Property homepageProp;
+    private final Property languageProp;
+    private final Property overviewProp;
+    private final Property taglineProp;
+    private final Property releaseProp;
+    private final Property popularityProp;
+    private final Property revenueProp;
+    private final Property runtimeProp;
 
     private Model model;
     private ObjectMapper mapper;
@@ -51,7 +66,7 @@ public class RDFTransformer {
         mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-        movies = mapper.readValue(Paths.get(filePath).toFile(), new TypeReference<List<Movie>>() {
+        movies = mapper.readValue(Paths.get(jsonPath).toFile(), new TypeReference<List<Movie>>() {
         });
 
         isA = model.createProperty(rdf + "type");
@@ -62,6 +77,17 @@ public class RDFTransformer {
         productionCompanyResource = model.createResource(dbpedia + "Company");
         productionCountryResource = model.createResource(dbpedia + "Country");
         labelProp = model.createProperty(rdfs + "label");
+        producedByProp = model.createProperty(dbpedia + "producedBy");
+        producedInProp = model.createProperty(wbs + "producedIn");
+        budgetProp = model.createProperty(dbpedia + "budget");
+        homepageProp = model.createProperty(dbpedia + "homepage");
+        languageProp = model.createProperty(dbpedia, "originalLanguage");
+        overviewProp = model.createProperty(rdfs, "comment");
+        taglineProp = model.createProperty(dbpedia, "tagline");
+        releaseProp = model.createProperty(dbpedia, "releaseDate");
+        popularityProp = model.createProperty(dbpedia, "popularity");
+        runtimeProp = model.createProperty(dbpedia, "runtime");
+        revenueProp = model.createProperty(dbpedia, "revenue");
     }
 
     private List<Category> getAllGenres() {
@@ -80,41 +106,72 @@ public class RDFTransformer {
 
     public void writeGenresToModel() {
 
-        getAllGenres().stream().forEach(e -> model.createResource(wbs + e.getName().replace(" ", "_"))
+        getAllGenres().stream().forEach(e -> model.createResource(wbs + cleanName(e.getName()))
                 .addProperty(isA, genreResource).addLiteral(labelProp, e.getName()));
 
     }
 
     public void writeProductionCountriesToModel() {
 
-        getAllProductionContries().stream().forEach(e -> model.createResource(wbs + e.getName().replace(" ", "_"))
+        getAllProductionContries().stream().forEach(e -> model.createResource(wbs + cleanName(e.getName()))
                 .addProperty(isA, productionCountryResource).addLiteral(labelProp, e.getName()));
 
     }
 
     public void writeProductionCompaniesToModel() {
 
-        getAllProductionCompanies().stream().forEach(e -> model.createResource(wbs + e.getName().replace(" ", "_"))
+        getAllProductionCompanies().stream().forEach(e -> model.createResource(wbs + cleanName(e.getName()))
                 .addProperty(isA, productionCompanyResource).addLiteral(labelProp, e.getName()));
 
     }
 
     public void writeMoviesToModel() {
-
         movies.stream().forEach(e -> {
-            Resource temp = model.createResource(wbs + e.getTitle().replace(" ", "_")).addProperty(isA, filmResource);
-            e.getGenres().stream().forEach(
-                    ee -> temp.addProperty(genreProp, model.createResource(wbs + ee.getName().replace(" ", "_"))));
+            Resource temp;
+
+            temp = model.createResource(wbs + cleanName(e.getTitle())).addProperty(isA, filmResource)
+                    .addLiteral(labelProp, e.getTitle()).addLiteral(budgetProp, e.getBudget())
+                    .addLiteral(homepageProp, e.getHomepage()).addLiteral(languageProp, e.getOriginalLanguage())
+                    .addLiteral(overviewProp, e.getOverview()).addLiteral(taglineProp, e.getTagline())
+                    .addLiteral(popularityProp, e.getPopularity()).addLiteral(revenueProp, e.getRevenue());
+
+            if (e.getReleaseDate() != null)
+                temp.addLiteral(releaseProp, e.getReleaseDate());
+            if (e.getRuntime() != null)
+                temp.addLiteral(runtimeProp, e.getRuntime());
+
+            e.getGenres().stream()
+                    .forEach(ee -> temp.addProperty(genreProp, model.createResource(wbs + cleanName(ee.getName()))));
+
             e.getKeywords().stream().forEach(ee -> temp.addProperty(keywordProp, ee.getName()));
+
+            e.getProductionCompanies().stream().forEach(
+                    ee -> temp.addProperty(producedByProp, model.createResource(wbs + cleanName(ee.getName()))));
+
+            e.getProductionCountries().stream().forEach(
+                    ee -> temp.addProperty(producedInProp, model.createResource(wbs + cleanName(ee.getName()))));
         });
+    }
 
-        // Resource mmmm = model.createResource(wbs +
-        // movies.get(0).getTitle()).addProperty(p, genreRes1).addProperty(p1,
-        // mmm);
-
+    private String cleanName(String name) {
+        return name.replace(" ", " ").replace("/", "").replace("-", "").replace(",", "_").replace(".", "_")
+                .replace("'", "").replace("\"", "").replace("&", "").replace("*", "").replace("$", "").replace("#", "");
     }
 
     public void print() {
         model.write(System.out, "TURTLE");
+    }
+
+    public void save() {
+        FileOutputStream f;
+        try {
+            f = new FileOutputStream(new File(rdfPath));
+            model.write(f, "TURTLE");
+            f.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
     }
 }

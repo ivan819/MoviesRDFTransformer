@@ -11,8 +11,9 @@ public class App {
         rdf.writeGenresToModel();
         rdf.writeProductionCountriesToModel();
         rdf.writeProductionCompaniesToModel();
-        rdf.print();
-        // rdf.writeMoviesToModel();
+
+        rdf.writeMoviesToModel();
+        rdf.save();
     }
 
 }

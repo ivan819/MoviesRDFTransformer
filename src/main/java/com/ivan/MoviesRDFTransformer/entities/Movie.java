@@ -1,5 +1,7 @@
 package com.ivan.MoviesRDFTransformer.entities;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class Movie {
     @JsonProperty("popularity")
     private Float popularity;
     @JsonProperty("release_date")
-    private Date releaseDate;
+    private String releaseDate;
     @JsonProperty("runtime")
     private Integer runtime;
 
@@ -140,10 +142,16 @@ public class Movie {
     }
 
     public Date getReleaseDate() {
-        return releaseDate;
+        SimpleDateFormat d = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            return d.parse(this.releaseDate);
+        } catch (ParseException e) {
+
+        }
+        return null;
     }
 
-    public void setReleaseDate(Date releaseDate) {
+    public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
 
