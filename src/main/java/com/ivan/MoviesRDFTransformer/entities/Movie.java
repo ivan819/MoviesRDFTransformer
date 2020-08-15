@@ -47,7 +47,10 @@ public class Movie {
     @JsonProperty("cast")
     private List<CastMember> castMembers;
 
+    private String url;
+
     public Movie() {
+
     }
 
     public Movie(Long id, String title) {
@@ -61,6 +64,7 @@ public class Movie {
 
     public void setId(Long id) {
         this.id = id;
+        this.url = "movie" + id;
     }
 
     public String getTitle() {
@@ -212,6 +216,14 @@ public class Movie {
         if (this.id == null)
             id = -1L;
         return this.id.hashCode();
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
 }

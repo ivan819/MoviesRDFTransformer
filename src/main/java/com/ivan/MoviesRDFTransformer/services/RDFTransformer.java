@@ -24,6 +24,7 @@ public class RDFTransformer {
     private final String dbpedia = "http://dbpedia.org/ontology/";
     private final String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
     private final String rdfs = "http://www.w3.org/2000/01/rdf-schema#";
+    private final String xsd = "http://www.w3.org/2001/XMLSchema#";
 
     private final Resource genreResource;
     private final Resource productionCompanyResource;
@@ -73,6 +74,7 @@ public class RDFTransformer {
         model.setNsPrefix("dbpedia", dbpedia);
         model.setNsPrefix("wbs", wbs);
         model.setNsPrefix("rdfs", rdfs);
+        model.setNsPrefix("xsd", xsd);
 
         subclassProp = model.createProperty(rdfs, "subClassOf");
 
@@ -130,26 +132,23 @@ public class RDFTransformer {
 
     public void writeProductionCompaniesToModel() {
 
-        JSONService.getAllProductionCompanies().stream().forEach(e -> model.createResource(wbs + cleanName(e.getName()))
+        JSONService.getAllProductionCompanies().stream().forEach(e -> model.createResource(wbs + cleanName(e.getUrl()))
                 .addProperty(isA, productionCompanyResource).addLiteral(labelProp, e.getName()));
 
     }
 
     public void writeMembersToModel() {
 
-        JSONService.getAllMembers().stream().distinct().sorted(Comparator.comparing(e -> e.getId()))
-                .forEach(e -> model.createResource(wbs + cleanName(e.getId().toString()))
-                        .addProperty(isA, personResource).addLiteral(labelProp, e.getName())
-                        .addLiteral(idProp, e.getId()));
+        JSONService.getAllMembers().stream().distinct().forEach(e -> model.createResource(wbs + cleanName(e.getUrl()))
+                .addProperty(isA, personResource).addLiteral(labelProp, e.getName()).addLiteral(idProp, e.getId()));
 
     }
 
     public void writeCastMembersToModel() {
 
         JSONService.getAllCastMembers().stream().distinct()
-                .forEach(e -> model.createResource(wbs + cleanName(e.getCharacter() + "_" + e.getName()))
-                        .addProperty(isA, castResource)
-                        .addProperty(hasPersonProp, model.createResource(wbs + cleanName(e.getId().toString())))
+                .forEach(e -> model.createResource(wbs + cleanName(e.getCredit())).addProperty(isA, castResource)
+                        .addProperty(hasPersonProp, model.createResource(wbs + cleanName(e.getUrl())))
                         .addLiteral(hasOrderProp, e.getOrder()).addLiteral(hasCharacterProp, e.getCharacter()));
 
     }
@@ -157,10 +156,10 @@ public class RDFTransformer {
     public void writeCrewMembersToModel() {
 
         JSONService.getAllCrewMembers().stream().distinct()
-                .forEach(e -> model.createResource(wbs + cleanName(e.getJob() + "_" + e.getName()))
-                        .addProperty(isA, crewResource)
-                        .addProperty(hasPersonProp, model.createResource(wbs + cleanName(e.getId().toString())))
-                        .addLiteral(inJobProp, e.getJob()).addLiteral(inDepartmentProp, e.getDepartment()));
+                .forEach(e -> model.createResource(wbs + cleanName(e.getCredit())).addProperty(isA, crewResource)
+                        .addProperty(hasPersonProp, model.createResource(cleanName(e.getUrl().toString())))
+                        .addLiteral(inJobProp, e.getJob())
+                        .addProperty(inDepartmentProp, model.createResource(wbs + cleanName(e.getDepartment()))));
 
     }
 
@@ -175,12 +174,14 @@ public class RDFTransformer {
         JSONService.getAllMovies().stream().forEach(e -> {
             Resource temp;
 
-            temp = model.createResource(wbs + e.getId().toString()).addProperty(isA, filmResource)
+            temp = model.createResource(wbs + cleanName(e.getUrl())).addProperty(isA, filmResource)
                     .addLiteral(idProp, e.getId()).addLiteral(labelProp, e.getTitle())
                     .addLiteral(budgetProp, e.getBudget()).addLiteral(homepageProp, e.getHomepage())
                     .addLiteral(languageProp, e.getOriginalLanguage()).addLiteral(overviewProp, e.getOverview())
                     .addLiteral(taglineProp, e.getTagline()).addLiteral(popularityProp, e.getPopularity())
                     .addLiteral(revenueProp, e.getRevenue());
+
+            // TODO da ne treba prazni da se stavat?
 
             if (e.getReleaseDate() != null)
                 temp.addLiteral(releaseProp, e.getReleaseDate());
@@ -192,26 +193,25 @@ public class RDFTransformer {
 
             e.getKeywords().stream().forEach(ee -> temp.addProperty(keywordProp, ee.getName()));
 
-            e.getProductionCompanies().stream().forEach(
-                    ee -> temp.addProperty(producedByProp, model.createResource(wbs + cleanName(ee.getName()))));
+            e.getProductionCompanies().stream()
+                    .forEach(ee -> temp.addProperty(producedByProp, model.createResource(wbs + cleanName(e.getUrl()))));
 
             e.getProductionCountries().stream().forEach(
                     ee -> temp.addProperty(producedInProp, model.createResource(wbs + cleanName(ee.getName()))));
 
-            e.getCastMembers().stream().forEach(ee -> temp.addProperty(hasCastProp,
-                    model.createResource(wbs + cleanName(ee.getCharacter() + "_" + ee.getName()))));
+            e.getCastMembers().stream().forEach(
+                    ee -> temp.addProperty(hasCastProp, model.createResource(wbs + cleanName(ee.getCredit()))));
 
-            e.getCrewMembers().stream().forEach(ee -> temp.addProperty(hasCrewProp,
-                    model.createResource(wbs + cleanName(ee.getJob() + "_" + ee.getName()))));
+            e.getCrewMembers().stream().forEach(
+                    ee -> temp.addProperty(hasCrewProp, model.createResource(wbs + cleanName(ee.getCredit()))));
         });
     }
 
     private String cleanName(String name) {
 
         try {
-            return URLEncoder.encode(name, StandardCharsets.UTF_8.toString());
+            return URLEncoder.encode(name.replace(" ", "").replace("&", ""), StandardCharsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return name;

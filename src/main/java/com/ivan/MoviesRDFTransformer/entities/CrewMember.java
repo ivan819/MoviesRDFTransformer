@@ -3,6 +3,7 @@ package com.ivan.MoviesRDFTransformer.entities;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CrewMember implements Member {
+    private String url;
     @JsonProperty("id")
     private Long id;
     @JsonProperty("name")
@@ -11,6 +12,8 @@ public class CrewMember implements Member {
     private String department;
     @JsonProperty("job")
     private String job;
+    @JsonProperty("credit_id")
+    private String credit;
 
     public String getDepartment() {
         return department;
@@ -29,10 +32,12 @@ public class CrewMember implements Member {
     }
 
     public Long getId() {
+
         return id;
     }
 
     public void setId(Long id) {
+        this.url = "member" + id;
         this.id = id;
     }
 
@@ -57,5 +62,21 @@ public class CrewMember implements Member {
     @Override
     public int hashCode() {
         return this.id.hashCode();
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getCredit() {
+        return credit;
+    }
+
+    public void setCredit(String credit) {
+        this.credit = "creditcrew" + credit;
     }
 }

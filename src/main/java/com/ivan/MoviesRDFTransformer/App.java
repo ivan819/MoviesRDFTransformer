@@ -10,7 +10,7 @@ public class App {
 
     public static void main(String[] args) throws IOException {
 
-        System.out.println(JSONService.getAllMovies().size());
+        // System.out.println(JSONService.getAllMovies().size());
         RDFTransformer rdf = new RDFTransformer();
         rdf.writeGenresToModel();
         printTime();
