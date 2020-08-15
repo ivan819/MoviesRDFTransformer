@@ -2,7 +2,6 @@ package com.ivan.MoviesRDFTransformer;
 
 import java.io.IOException;
 
-import com.ivan.MoviesRDFTransformer.services.JSONService;
 import com.ivan.MoviesRDFTransformer.services.RDFTransformer;
 
 public class App {

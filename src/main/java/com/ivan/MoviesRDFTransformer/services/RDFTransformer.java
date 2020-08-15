@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -51,12 +50,9 @@ public class RDFTransformer {
     private final Property revenueProp;
     private final Property runtimeProp;
     private final Property idProp;
-    private final Property subclassProp;
 
     private final Property hasCrewProp;
     private final Property hasCastProp;
-
-    private final Property hasMovieProp;
 
     private final Property hasOrderProp;
     private final Property hasCharacterProp;
@@ -75,8 +71,6 @@ public class RDFTransformer {
         model.setNsPrefix("wbs", wbs);
         model.setNsPrefix("rdfs", rdfs);
         model.setNsPrefix("xsd", xsd);
-
-        subclassProp = model.createProperty(rdfs, "subClassOf");
 
         genreResource = model.createResource(dbpedia + "Genre");
         filmResource = model.createResource(dbpedia + "Film");
@@ -113,7 +107,6 @@ public class RDFTransformer {
         hasOrderProp = model.createProperty(wbs, "hasOrder");
         hasCharacterProp = model.createProperty(wbs, "hasCharacter");
         hasPersonProp = model.createProperty(wbs, "hasPerson");
-        hasMovieProp = model.createProperty(wbs, "hasMovie");
     }
 
     public void writeGenresToModel() {
